@@ -1,0 +1,35 @@
+.cart-coupon {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #df2020;
+  border-radius: 5px;
+}
+
+.cart-coupon h5 {
+  margin-bottom: 1rem;
+  color: #df2020;
+}
+
+.cart-coupon ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cart-coupon li {
+  padding: 0.5rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+}
+
+.cart-coupon li.selected {
+  background-color: #df2020;
+  color: white;
+}
+
+.cart-coupon .selected-coupon {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #212245;
+}

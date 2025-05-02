@@ -1,24 +1,33 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
+import { couponActions } from './couponSlice';
+import { useSelector } from 'react-redux';
 
 const items =
-  localStorage.getItem("cartItems") !== null
-    ? JSON.parse(localStorage.getItem("cartItems"))
+  localStorage.getItem('cartItems') !== null
+    ? JSON.parse(localStorage.getItem('cartItems'))
     : [];
 
 const totalAmount =
-  localStorage.getItem("totalAmount") !== null
-    ? JSON.parse(localStorage.getItem("totalAmount"))
+  localStorage.getItem('totalAmount') !== null
+    ? JSON.parse(localStorage.getItem('totalAmount'))
     : 0;
 
 const totalQuantity =
-  localStorage.getItem("totalQuantity") !== null
-    ? JSON.parse(localStorage.getItem("totalQuantity"))
+  localStorage.getItem('totalQuantity') !== null
+    ? JSON.parse(localStorage.getItem('totalQuantity'))
     : 0;
 
 const setItemFunc = (item, totalAmount, totalQuantity) => {
-  localStorage.setItem("cartItems", JSON.stringify(item));
-  localStorage.setItem("totalAmount", JSON.stringify(totalAmount));
-  localStorage.setItem("totalQuantity", JSON.stringify(totalQuantity));
+  localStorage.setItem('cartItems', JSON.stringify(item));
+  localStorage.setItem('totalAmount', JSON.stringify(totalAmount));
+  localStorage.setItem('totalQuantity', JSON.stringify(totalQuantity));
+};
+
+const calculateDiscountedTotal = (totalAmount, selectedCoupon) => {
+  if (selectedCoupon) {
+    return totalAmount - (totalAmount * selectedCoupon.discount) / 100;
+  }
+  return totalAmount;
 };
 
 const initialState = {
@@ -28,10 +37,9 @@ const initialState = {
 };
 
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
 
-  
   reducers: {
     // =========== add item ============
     addItem(state, action) {
@@ -40,7 +48,6 @@ const cartSlice = createSlice({
       const extraIngredients = action.payload.extraIngredients;
       const existingItem = state.cartItems.find((item) => item.id === id);
 
-      
       if (!existingItem) {
         state.cartItems.push({
           id: newItem.id,
@@ -49,38 +56,39 @@ const cartSlice = createSlice({
           price: newItem.price,
           quantity: 1,
           totalPrice: newItem.price,
-          extraIngredients: newItem.extraIngredients
+          extraIngredients: newItem.extraIngredients,
         });
         state.totalQuantity++;
-
-      } else if(existingItem && (JSON.stringify(existingItem.extraIngredients) === JSON.stringify(extraIngredients)))  {
+      } else if (
+        existingItem &&
+        JSON.stringify(existingItem.extraIngredients) ===
+          JSON.stringify(extraIngredients)
+      ) {
         state.totalQuantity++;
         existingItem.quantity++;
       } else {
-
-        const value = JSON.parse(localStorage.getItem("cartItems"));
-        let index = value.findIndex(s => s.id === existingItem.id);
+        const value = JSON.parse(localStorage.getItem('cartItems'));
+        let index = value.findIndex((s) => s.id === existingItem.id);
         const newValue = {
-        id: existingItem.id,
-        title: existingItem.title,
-        image01: existingItem.image01,
-        price: existingItem.price,
-        quantity: 1,
-        totalPrice: existingItem.price,
-        extraIngredients: extraIngredients
-      }
-        state.cartItems.splice(index, 1, newValue); 
+          id: existingItem.id,
+          title: existingItem.title,
+          image01: existingItem.image01,
+          price: existingItem.price,
+          quantity: 1,
+          totalPrice: existingItem.price,
+          extraIngredients: extraIngredients,
+        };
+        state.cartItems.splice(index, 1, newValue);
         state.totalQuantity = state.cartItems.reduce(
           (total, item) => total + Number(item.quantity),
           0
         );
       }
-     
+
       state.totalAmount = state.cartItems.reduce(
         (total, item) => total + Number(item.price) * Number(item.quantity),
         0
       );
-
 
       setItemFunc(
         state.cartItems.map((item) => item),
@@ -88,8 +96,6 @@ const cartSlice = createSlice({
         state.totalQuantity
       );
     },
-
-   
 
     // ========= remove item ========
 
@@ -139,6 +145,15 @@ const cartSlice = createSlice({
         state.totalQuantity
       );
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(couponActions.selectCoupon, (state, action) => {
+      const selectedCoupon = action.payload;
+      state.totalAmount = calculateDiscountedTotal(
+        state.totalAmount,
+        selectedCoupon
+      );
+    });
   },
 });
 
