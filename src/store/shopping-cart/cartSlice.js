@@ -1,6 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { couponActions } from './couponSlice';
-import { useSelector } from 'react-redux';
 
 const items =
   localStorage.getItem('cartItems') !== null
@@ -21,13 +19,6 @@ const setItemFunc = (item, totalAmount, totalQuantity) => {
   localStorage.setItem('cartItems', JSON.stringify(item));
   localStorage.setItem('totalAmount', JSON.stringify(totalAmount));
   localStorage.setItem('totalQuantity', JSON.stringify(totalQuantity));
-};
-
-const calculateDiscountedTotal = (totalAmount, selectedCoupon) => {
-  if (selectedCoupon) {
-    return totalAmount - (totalAmount * selectedCoupon.discount) / 100;
-  }
-  return totalAmount;
 };
 
 const initialState = {
@@ -145,15 +136,6 @@ const cartSlice = createSlice({
         state.totalQuantity
       );
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(couponActions.selectCoupon, (state, action) => {
-      const selectedCoupon = action.payload;
-      state.totalAmount = calculateDiscountedTotal(
-        state.totalAmount,
-        selectedCoupon
-      );
-    });
   },
 });
 
